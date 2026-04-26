@@ -17,6 +17,7 @@ class DatabaseFactory {
             jdbcUrl = "jdbc:sqlite::memory:"
             driverClassName = "org.sqlite.JDBC"
             maximumPoolSize = 1
+            connectionInitSql = "PRAGMA foreign_keys = ON"
         }
         val dataSource = HikariDataSource(config)
 
