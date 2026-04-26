@@ -3,11 +3,8 @@ package com.calendar.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import jakarta.annotation.PostConstruct
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,13 +17,15 @@ class DatabaseFactory {
             jdbcUrl = "jdbc:sqlite::memory:"
             driverClassName = "org.sqlite.JDBC"
             maximumPoolSize = 1
+            connectionInitSql = "PRAGMA foreign_keys = ON"
         }
-        Database.connect(HikariDataSource(config))
-        transaction {
-            SchemaUtils.create(EventTypes, Bookings, Settings)
-            if (Settings.selectAll().count() == 0L) {
-                Settings.insert { it[timezone] = "UTC" }
-            }
-        }
+        val dataSource = HikariDataSource(config)
+
+        Flyway.configure()
+            .dataSource(dataSource)
+            .load()
+            .migrate()
+
+        Database.connect(dataSource)
     }
 }
