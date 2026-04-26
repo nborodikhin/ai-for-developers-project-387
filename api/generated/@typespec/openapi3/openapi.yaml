@@ -1,0 +1,433 @@
+openapi: 3.0.0
+info:
+  title: Calendar Booking API
+  version: 1.0.0
+tags:
+  - name: EventTypes
+  - name: EventTypeBookings
+  - name: AvailableSlots
+  - name: Bookings
+  - name: Settings
+paths:
+  /api/settings:
+    get:
+      operationId: Settings_get
+      description: Get current owner settings
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerSettings'
+      tags:
+        - Settings
+    put:
+      operationId: Settings_updateTimezone
+      description: Update owner timezone
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerSettings'
+      tags:
+        - Settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTimezoneRequest'
+  /api/bookings:
+    get:
+      operationId: Bookings_list
+      description: "List bookings. Without email: all upcoming (owner view). With email: guest's bookings."
+      parameters:
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+      tags:
+        - Bookings
+  /api/bookings/{id}:
+    put:
+      operationId: Bookings_update
+      description: Update a booking (only guestName and comment)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Bookings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookingRequest'
+    delete:
+      operationId: Bookings_delete
+      description: Cancel a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Bookings
+  /api/event-types:
+    post:
+      operationId: EventTypes_create
+      description: Create a new event type
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+      tags:
+        - EventTypes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventTypeRequest'
+    get:
+      operationId: EventTypes_list
+      description: List all event types (non-deleted)
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+      tags:
+        - EventTypes
+  /api/event-types/{eventTypeId}/available-slots:
+    get:
+      operationId: AvailableSlots_list
+      description: Get available time slots for a given date
+      parameters:
+        - name: eventTypeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailableSlot'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - AvailableSlots
+  /api/event-types/{eventTypeId}/bookings:
+    post:
+      operationId: EventTypeBookings_create
+      description: Create a booking for an event type
+      parameters:
+        - name: eventTypeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - EventTypeBookings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+  /api/event-types/{id}:
+    get:
+      operationId: EventTypes_read
+      description: Get a single event type by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - EventTypes
+    put:
+      operationId: EventTypes_update
+      description: Update an event type
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - EventTypes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventTypeRequest'
+    delete:
+      operationId: EventTypes_delete
+      description: Soft-delete an event type (bookings are preserved)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - EventTypes
+components:
+  schemas:
+    AvailableSlot:
+      type: object
+      required:
+        - startTime
+        - endTime
+        - available
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        available:
+          type: boolean
+    Booking:
+      type: object
+      required:
+        - id
+        - eventTypeId
+        - eventTypeName
+        - guestName
+        - guestEmail
+        - startTime
+        - endTime
+      properties:
+        id:
+          type: integer
+          format: int64
+        eventTypeId:
+          type: integer
+          format: int64
+        eventTypeName:
+          type: string
+        guestName:
+          type: string
+        guestEmail:
+          type: string
+        comment:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+    CreateBookingRequest:
+      type: object
+      required:
+        - guestName
+        - guestEmail
+        - startTime
+      properties:
+        guestName:
+          type: string
+        guestEmail:
+          type: string
+        comment:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+    CreateEventTypeRequest:
+      type: object
+      required:
+        - name
+        - description
+        - durationMinutes
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    EventType:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - durationMinutes
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+    OwnerSettings:
+      type: object
+      required:
+        - ownerTimezone
+      properties:
+        ownerTimezone:
+          type: string
+    UpdateTimezoneRequest:
+      type: object
+      required:
+        - timezone
+      properties:
+        timezone:
+          type: string
+    UpdateBookingRequest:
+      type: object
+      properties:
+        guestName:
+          type: string
+        comment:
+          type: string
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+    variables: {}
