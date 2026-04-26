@@ -80,6 +80,9 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.45.2.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
 
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-community-db-support")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
