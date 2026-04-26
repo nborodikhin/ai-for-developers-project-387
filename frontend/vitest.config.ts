@@ -9,5 +9,11 @@ export default defineConfig({
     globals: true,
     css: false,
     exclude: ['node_modules', 'e2e'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      exclude: ['src/generated/**', 'src/main.tsx', 'src/test/**'],
+    },
   },
 });
